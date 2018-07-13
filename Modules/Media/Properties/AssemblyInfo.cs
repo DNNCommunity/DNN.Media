@@ -40,8 +40,8 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("DotNetNuke.Modules.Media")]
 [assembly: AssemblyDescription("ASP.NET Open Source Portal Application, Media Module")]
-[assembly: AssemblyCompany("DotNetNuke Corporation")]
-[assembly: AssemblyProduct("http://www.dotnetnuke.com")]
+[assembly: AssemblyCompany("DNN Corp")]
+[assembly: AssemblyProduct("http://www.dnnsoftware.com")]
 [assembly: AssemblyCopyright("Portal engine source code is copyright &copy; 2002-YYYY by DotNetNuke. All Rights Reserved")]
 [assembly: AssemblyTrademark("DotNetNuke")]
 //[assembly: CLSCompliant(true)]
@@ -59,9 +59,9 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 
-[assembly: AssemblyVersion("04.04.02")]
+[assembly: AssemblyVersion("05.00.00")]
 
-[assembly: AssemblyFileVersionAttribute("04.04.02")]
+[assembly: AssemblyFileVersion("05.00.00")]
 
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyDelaySign(false)]

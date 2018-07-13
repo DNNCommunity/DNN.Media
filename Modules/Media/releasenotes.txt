@@ -2,6 +2,12 @@
 <p><strong>Date Released:</strong> 02/09/2014</p>
 
 <ul>
-	<li>Updated to use ASP.NET 4.5.1</li>
-	<li>Raised minimum supported DNN version to 09.01.01</li>
+	<li>Issue 11 - Raised minimum supported DNN version to 09.01.01</li>
+	<li>
+		<ul>
+			<li>Updated to use ASP.NET 4.5.1</li>
+		</ul>
+	</li>
+	<li>Issue 12 - Resolved client-side error when Edit Options loads</li>
+	<li>Issue 8 - Replace ISearchable implementation with ModuleSearchBase</li>
 </ul>

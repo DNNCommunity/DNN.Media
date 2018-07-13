@@ -18,27 +18,27 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-//INSTANT C# NOTE: Formerly VB project-level imports:
 using DotNetNuke;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
-using DotNetNuke.Services.Exceptions;
-using DotNetNuke.Services.Journal;
-using DotNetNuke.Services.Localization;
-using System;
-using System.Collections;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
-
 using DotNetNuke.Entities.Controllers;
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Entities.Modules.Definitions;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Entities.Users;
+using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.FileSystem;
+using DotNetNuke.Services.Journal;
+using DotNetNuke.Services.Localization;
 using DotNetNuke.Services.Search;
+using DotNetNuke.Services.Search.Controllers;
+using DotNetNuke.Services.Search.Entities;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -61,7 +61,7 @@ namespace DotNetNuke.Modules.Media
     ///		[lpointer]	31.10.2005	documented
     /// </history>
     /// -----------------------------------------------------------------------------
-    public class MediaController : DotNetNuke.Entities.Modules.IPortable, DotNetNuke.Entities.Modules.IUpgradeable, DotNetNuke.Entities.Modules.ISearchable
+    public class MediaController : ModuleSearchBase, IPortable, IUpgradeable
     {
 
         #region  Constants
@@ -81,6 +81,14 @@ namespace DotNetNuke.Modules.Media
         private const string JOURNAL_OBJECTKEY_FORMAT = "{0}-{1}-{2}-{3}";
         private const string MEDIA_JOURNALTYPE = "link";
         private const int JOURNAL_TYPE_ID = 2;
+
+        private const string SEARCH_KEY_FORMAT = "DNN.Media_{0}";
+        private const string SEARCH_CONTENT_FORMAT = " :: ";
+        private const string SEARCH_TABID = "TabId";
+        private const string SEARCH_TABMODULEID = "TabModuleId";
+        private const string REPLACE_HTML = "(<(.|\\n)*?>|&lt;(.|\\n)*?&gt;)";
+        private const string REPLACE_SPACES = "&(amp;)*nbsp;";
+        private const string REPLACE_QUOTES = "&(amp;)*quot;";
 
         #endregion
 
@@ -666,44 +674,55 @@ namespace DotNetNuke.Modules.Media
 
         #region  ISearchable
 
-        public DotNetNuke.Services.Search.SearchItemInfoCollection GetSearchItems(DotNetNuke.Entities.Modules.ModuleInfo ModInfo)
+        public override IList<SearchDocument> GetModifiedSearchDocuments(ModuleInfo modInfo, DateTime beginDate)
         {
+            var searchDocuments = new Dictionary<string, SearchDocument>();
 
-            SearchItemInfoCollection itmSearchColl = new SearchItemInfoCollection();
-            MediaInfo itm = GetMedia(ModInfo.ModuleID);
+            try
+            { 
+                var itmSearchColl = new SearchItemInfoCollection();
+                var itm = GetMedia(modInfo.ModuleID);
+                var key = string.Format(SEARCH_KEY_FORMAT, modInfo.ModuleID);
+                string content = string.Concat(itm.Alt, SEARCH_CONTENT_FORMAT, StripTags(itm.MediaMessage));
 
-            if (itm != null)
+                var searchDocument = new SearchDocument
+                {
+                    UniqueKey = key,
+                    PortalId = modInfo.PortalID,
+                    Body = content,
+                    ModifiedTimeUtc = itm.LastUpdatedDate,
+                    Title = modInfo.ModuleTitle,
+                    AuthorUserId = itm.LastUpdatedBy,
+                    Keywords = new Dictionary<string, string>
+                        {
+                            {SEARCH_TABID, modInfo.TabID.ToString()},
+                            {SEARCH_TABMODULEID, modInfo.TabModuleID.ToString()}
+                        }
+                };
+
+                searchDocuments.Add(key, searchDocument);
+            }
+            catch (Exception ex)
             {
-
-                string content = string.Concat(itm.Alt, " :: ", StripTags(itm.MediaMessage));
-
-                SearchItemInfo itmSearch = new SearchItemInfo(ModInfo.ModuleTitle, content, itm.LastUpdatedBy, itm.LastUpdatedDate, ModInfo.ModuleID, itm.ModuleID.ToString(), content);
-                itmSearchColl.Add(itmSearch);
-
+                Exceptions.LogException(ex);
             }
 
-            return itmSearchColl;
-
+            return searchDocuments.Values.ToList();
         }
 
         private string StripTags(string html)
         {
-
             string newHtml = html;
-            string replaceHtml = "(<(.|\\n)*?>|&lt;(.|\\n)*?&gt;)";
-            string replaceSpaces = "&(amp;)*nbsp;";
-            string replaceQuotes = "&(amp;)*quot;";
 
             newHtml = System.Web.HttpUtility.HtmlDecode(newHtml);
-            newHtml = Regex.Replace(newHtml, replaceHtml, "");
-            newHtml = Regex.Replace(newHtml, replaceSpaces, "");
-            newHtml = Regex.Replace(newHtml, replaceQuotes, "");
+            newHtml = Regex.Replace(newHtml, REPLACE_HTML, string.Empty);
+            newHtml = Regex.Replace(newHtml, REPLACE_SPACES, string.Empty);
+            newHtml = Regex.Replace(newHtml, REPLACE_QUOTES, string.Empty);
 
-            // for troubleshooting
+            // uncomment for troubleshooting
             //LogException(New Exception(String.Concat("newHtml = ", newHtml)))
 
             return newHtml;
-
         }
 
         #endregion
@@ -712,15 +731,12 @@ namespace DotNetNuke.Modules.Media
 
         private int GetModuleDefID(string ModuleName)
         {
-
             try
             {
-
                 DesktopModuleInfo desktopInfo = DesktopModuleController.GetDesktopModuleByModuleName(ModuleName, DotNetNuke.Entities.Portals.PortalController.GetCurrentPortalSettings().PortalId);
                 ModuleDefinitionInfo modDefInfo = ModuleDefinitionController.GetModuleDefinitionByFriendlyName(ModuleName, desktopInfo.DesktopModuleID);
 
                 return modDefInfo.ModuleDefID;
-
             }
             catch
             {
@@ -728,11 +744,8 @@ namespace DotNetNuke.Modules.Media
                 // do nothing - an expected nullreference exception should happen here if the module is not going through the expected upgrade
                 return Null.NullInteger;
             }
-
         }
 
         #endregion
-
     }
-
 }
