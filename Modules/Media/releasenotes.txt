@@ -1,19 +1,20 @@
-﻿<div style="width:100%;height:275px;overflow:auto;">
+﻿<h3>Media Module Version 05.00.00</h3>
+<p><strong>Date Released:</strong> 07/13/2018</p>
 
-	<h3>Media Module Version 04.04.02</h3>
-	<p><strong>Date Released:</strong> 02/09/2014</p>
+<ul>
+	<li>Issue 11 - Raised minimum supported DNN version to 09.01.01</li>
+	<li>
+		<ul>
+			<li>Updated to use ASP.NET 4.5.1</li>
+		</ul>
+	</li>
+	<li>Issue 12 - Resolved client-side error when Edit Options loads</li>
+	<li>Issue 8 - Replace ISearchable implementation with ModuleSearchBase</li>
+	<li>Issue 10 - Description doesn't display below media as expected</li>
+</ul>
 
-	<ul>
-		<li>Tested for version 07.02.00 compatibility</li>
-		<li>Updated oEmbed to version 00.03.00</li>
-		<li>Added missing description below images</li>
-		<li>Fixed oEmbed SSL providers (can use https now)</li>
-		<li>Fixed CSS conflicts with fieldsets</li>
-		<li>Removed NewtonsoftJSON dependency</li>
-		<li>Fixed issue with sub-directories being used for local media</li>
-		<li>Fixed URL that is generated</li>
-	</ul>
+<p>Contributors of this release include:</p>
 
-</div>
-
-<p>For more information, see the <a href="http://www.dotnetnuke.com/Community/Extensions-Forge/view/ProjectDetail/project/dnnmedia.aspx" target="_blank">Media Module project homepage</a>.</p>
+<ul>
+	<li><a href="https://upendoventures.com/How/People/Will-Strohl" target="_blank">Will Strohl</a> - <a href="https://twitter.com/upendoventures" target="_blank">@UpendoVentures</a></li>
+</ul>

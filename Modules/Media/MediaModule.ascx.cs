@@ -1,6 +1,6 @@
 //
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,7 +18,10 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using DotNetNuke.Entities.Modules;
 using DotNetNuke.Services.Exceptions;
+using DotNetNuke.Framework;
+using DotNetNuke.Framework.JavaScriptLibraries;
 using System;
 using System.Collections.Generic;
 using DNNSkins = DotNetNuke.UI.Skins;
@@ -33,7 +36,7 @@ namespace DotNetNuke.Modules.Media
     /// </summary>
     /// <remarks>
     /// </remarks>
-    public partial class MediaModule : MediaModuleBase, DotNetNuke.Entities.Modules.IActionable
+    public partial class MediaModule : MediaModuleBase, IActionable
     {
 
         #region  Constants
@@ -58,7 +61,7 @@ namespace DotNetNuke.Modules.Media
 
         private void InitializeComponent()
         {
-            this.Load += new System.EventHandler(Page_Load);
+            this.Load += new EventHandler(Page_Load);
         }
 
         /// <summary>
@@ -74,7 +77,8 @@ namespace DotNetNuke.Modules.Media
         {
             try
             {
-                DotNetNuke.Framework.jQuery.RequestRegistration();
+                JavaScript.RequestRegistration(CommonJs.DnnPlugins);
+                JavaScript.RequestRegistration(CommonJs.jQueryMigrate);
 
                 BindData();
             }
@@ -82,7 +86,6 @@ namespace DotNetNuke.Modules.Media
             {
                 Exceptions.ProcessModuleLoadException(this, exc, UserInfo.IsSuperUser);
             }
-
         }
 
         #endregion
@@ -99,8 +102,7 @@ namespace DotNetNuke.Modules.Media
                 if (IsEditable)
                 {
                     // there is no media yet
-                    DNNSkins.Skin.AddModuleMessage(this, GetLocalizedString("NoMediaMessage.Text"),
-                                                   ModuleMessage.ModuleMessageType.BlueInfo);
+                    DNNSkins.Skin.AddModuleMessage(this, GetLocalizedString("NoMediaMessage.Text"), ModuleMessage.ModuleMessageType.BlueInfo);
                 }
                 else
                 {
@@ -142,7 +144,5 @@ namespace DotNetNuke.Modules.Media
         }
 
         #endregion
-
     }
-
 }

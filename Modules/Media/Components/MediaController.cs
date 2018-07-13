@@ -1,6 +1,6 @@
 //
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,27 +18,28 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-//INSTANT C# NOTE: Formerly VB project-level imports:
 using DotNetNuke;
+using DotNetNuke.Application;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
-using DotNetNuke.Services.Exceptions;
-using DotNetNuke.Services.Journal;
-using DotNetNuke.Services.Localization;
-using System;
-using System.Collections;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
-
 using DotNetNuke.Entities.Controllers;
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Entities.Modules.Definitions;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Entities.Users;
+using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.FileSystem;
+using DotNetNuke.Services.Journal;
+using DotNetNuke.Services.Localization;
 using DotNetNuke.Services.Search;
+using DotNetNuke.Services.Search.Controllers;
+using DotNetNuke.Services.Search.Entities;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -46,7 +47,6 @@ using WillStrohl.API.oEmbed;
 
 namespace DotNetNuke.Modules.Media
 {
-
     /// -----------------------------------------------------------------------------
     /// Namespace:  DotNetNuke.Modules.Media
     /// Project:    DotNetNuke
@@ -61,9 +61,8 @@ namespace DotNetNuke.Modules.Media
     ///		[lpointer]	31.10.2005	documented
     /// </history>
     /// -----------------------------------------------------------------------------
-    public class MediaController : DotNetNuke.Entities.Modules.IPortable, DotNetNuke.Entities.Modules.IUpgradeable, DotNetNuke.Entities.Modules.ISearchable
+    public class MediaController : ModuleSearchBase, IPortable, IUpgradeable
     {
-
         #region  Constants
 
         // constants for UI elements to filter supported file types
@@ -81,6 +80,14 @@ namespace DotNetNuke.Modules.Media
         private const string JOURNAL_OBJECTKEY_FORMAT = "{0}-{1}-{2}-{3}";
         private const string MEDIA_JOURNALTYPE = "link";
         private const int JOURNAL_TYPE_ID = 2;
+
+        private const string SEARCH_KEY_FORMAT = "DNN.Media_{0}";
+        private const string SEARCH_CONTENT_FORMAT = " :: ";
+        private const string SEARCH_TABID = "TabId";
+        private const string SEARCH_TABMODULEID = "TabModuleId";
+        private const string REPLACE_HTML = "(<(.|\\n)*?>|&lt;(.|\\n)*?&gt;)";
+        private const string REPLACE_SPACES = "&(amp;)*nbsp;";
+        private const string REPLACE_QUOTES = "&(amp;)*quot;";
 
         #endregion
 
@@ -103,7 +110,7 @@ namespace DotNetNuke.Modules.Media
         {
             get
             {
-                if (DotNetNuke.Application.DotNetNukeContext.Current.Application.Version.Major < 5 | DotNetNuke.Application.DotNetNukeContext.Current.Application.Version.Major >= 6)
+                if (DotNetNukeContext.Current.Application.Version.Major < 5 | DotNetNukeContext.Current.Application.Version.Major >= 6)
                 {
                     return MEDIA_FILE_TYPES_LEGACY;
                 }
@@ -134,14 +141,10 @@ namespace DotNetNuke.Modules.Media
 
                 foreach (KeyValuePair<string, string> kvp in settingsDictionary)
                 {
-
                     if (string.Equals(kvp.Key, "FileExtensions", StringComparison.InvariantCultureIgnoreCase))
                     {
-
                         return kvp.Value;
-
                     }
-
                 }
 
                 return string.Empty;
@@ -263,19 +266,8 @@ namespace DotNetNuke.Modules.Media
 
             if (objMedia != null && objMedia.ModuleID > Null.NullInteger)
             {
-
                 if (objMedia.MediaType == 0) // standard file system
                 {
-                    // 20120822 - WStrohl
-                    // old way of retrieving files from the file system
-                    // no longer needed with folder providers
-                    //objMedia.Src = Globals.LinkClick(objMedia.Src.ToLower(), tabId, moduleId, false);
-
-                    //if (objMedia.Src.IndexOf("://") == 0)
-                    //{
-                    //    objMedia.Src = string.Concat(settings.HomeDirectory, objMedia.Src);
-                    //}
-
                     MediaMarkUpUtility utilMedia = new MediaMarkUpUtility();
 
                     // Check extension
@@ -299,37 +291,34 @@ namespace DotNetNuke.Modules.Media
                     }
 
                     lstMedia[0] = HTMLTag;
-
                 }
                 else if (objMedia.MediaType == 1) // embed code
                 {
-
                     lstMedia[0] = System.Web.HttpUtility.HtmlDecode(objMedia.Src);
-
                 }
                 else if (objMedia.MediaType == 2) // oembed
                 {
-
                     try
                     {
                         Wrapper ctlOEmbed = new Wrapper();
-                        if (objMedia.Width > 0 & objMedia.Height > 0)
-                        {
-                            lstMedia[0] = ctlOEmbed.GetContent(new RequestInfo(objMedia.Src));
-                        }
-                        else
-                        {
+                        //if (objMedia.Width > 0 & objMedia.Height > 0)
+                        //{
+                        //    lstMedia[0] = ctlOEmbed.GetContent(new RequestInfo(objMedia.Src));
+                        //}
+                        //else
+                        //{
                             lstMedia[0] = ctlOEmbed.GetContent(new RequestInfo(objMedia.Src, objMedia.Width, objMedia.Height));
-                        }
+                        //}
                     }
                     catch (Exception ex)
                     {
                         Exceptions.LogException(ex);
                         lstMedia[2] = "oEmbed.ErrorMessage";
                     }
-
                 }
 
+                // load the saved message from options
+                lstMedia[1] = objMedia.MediaMessage;
             }
 
             return lstMedia;
@@ -449,10 +438,8 @@ namespace DotNetNuke.Modules.Media
         /// </history>
         public string ExportModule(int ModuleID)
         {
-
             try
             {
-
                 StringBuilder sbXML = new StringBuilder();
 
                 MediaInfo objMedia = GetMedia(ModuleID);
@@ -463,7 +450,7 @@ namespace DotNetNuke.Modules.Media
                     // maintain the following xml tags as-is for backwards compatibility with old export files
                     if (objMedia.MediaType == 0)
                     {
-                        int intFileId = FileManager.Instance.GetFile(DotNetNuke.Entities.Portals.PortalController.GetCurrentPortalSettings().PortalId, objMedia.Src).FileId;
+                        int intFileId = FileManager.Instance.GetFile(PortalController.GetCurrentPortalSettings().PortalId, objMedia.Src).FileId;
                         sbXML.AppendFormat("<src>FileId={0}</src>", intFileId.ToString());
                     }
                     else
@@ -498,7 +485,6 @@ namespace DotNetNuke.Modules.Media
                 //
 
                 return sbXML.ToString();
-
             }
             catch (Exception ex)
             {
@@ -521,10 +507,8 @@ namespace DotNetNuke.Modules.Media
         /// </history>
         public void ImportModule(int ModuleID, string Content, string Version, int UserId)
         {
-
             try
             {
-
                 // Check to see if the module already has media. If it does, get rid of it.
                 MediaInfo oMedia = new MediaInfo();
                 oMedia = GetMedia(ModuleID);
@@ -535,14 +519,15 @@ namespace DotNetNuke.Modules.Media
                 }
 
                 XmlNode xmlImage = Globals.GetContent(Content, "image");
-                MediaInfo objImage = new MediaInfo();
-
-                objImage.ModuleID = ModuleID;
-                objImage.Src = xmlImage.SelectSingleNode("src").InnerText; //ImportUrl(ModuleID, xmlImage.SelectSingleNode("src").InnerText)
-                objImage.Alt = xmlImage.SelectSingleNode("alt").InnerText;
-                objImage.Width = int.Parse(xmlImage.SelectSingleNode("width").InnerText);
-                objImage.Height = int.Parse(xmlImage.SelectSingleNode("height").InnerText);
-                objImage.NavigateUrl = xmlImage.SelectSingleNode("navigateUrl").InnerText;
+                MediaInfo objImage = new MediaInfo
+                {
+                    ModuleID = ModuleID,
+                    Src = xmlImage.SelectSingleNode("src").InnerText, //ImportUrl(ModuleID, xmlImage.SelectSingleNode("src").InnerText)
+                    Alt = xmlImage.SelectSingleNode("alt").InnerText,
+                    Width = int.Parse(xmlImage.SelectSingleNode("width").InnerText),
+                    Height = int.Parse(xmlImage.SelectSingleNode("height").InnerText),
+                    NavigateUrl = xmlImage.SelectSingleNode("navigateUrl").InnerText
+                };
 
                 // new/missing properties to assign in v03.03.00
 
@@ -593,7 +578,7 @@ namespace DotNetNuke.Modules.Media
                     objImage.MediaMessage = xmlImage.SelectSingleNode("MediaMessage").InnerText;
                 }
 
-                UserInfo currentUser = UserController.GetCurrentUserInfo();
+                var currentUser = UserController.GetCurrentUserInfo();
 
                 if (currentUser != null && currentUser.UserID > 0)
                 {
@@ -601,7 +586,7 @@ namespace DotNetNuke.Modules.Media
                 }
                 else
                 {
-                    PortalSettings portalSettings = PortalController.GetCurrentPortalSettings();
+                    var portalSettings = PortalController.GetCurrentPortalSettings();
 
                     if (portalSettings != null)
                     {
@@ -611,19 +596,16 @@ namespace DotNetNuke.Modules.Media
 
                 objImage.LastUpdatedDate = DateTime.Now;
 
-
                 AddMedia(objImage);
 
                 // calling this method to clear the module cache, and ensure all is wired up from the DAL for the next page load
-                DotNetNuke.Entities.Modules.ModuleController.SynchronizeModule(ModuleID);
-
+                ModuleController.SynchronizeModule(ModuleID);
             }
             catch (Exception ex)
             {
                 Exceptions.LogException(ex);
                 throw ex;
             }
-
         }
 
         #endregion
@@ -632,78 +614,82 @@ namespace DotNetNuke.Modules.Media
 
         public string UpgradeModule(string Version)
         {
-
             // Upgrade 03.02.00
             // Sets the Modules with Image to Media
-
             if (string.Equals(Version, "03.02.00"))
             {
-
                 try
                 {
-
                     MediaController objMC = new MediaController();
                     objMC.UpgradeMedia(GetModuleDefID("DNN_Image"), GetModuleDefID("DNN_Media"));
                     // clear entire cache
                     DataCache.ClearHostCache(true);
 
                     return "True";
-
                 }
                 catch (Exception ex)
                 {
                     Exceptions.LogException(ex);
                     return "False";
                 }
-
             }
 
             return "True";
-
         }
 
         #endregion
 
         #region  ISearchable
 
-        public DotNetNuke.Services.Search.SearchItemInfoCollection GetSearchItems(DotNetNuke.Entities.Modules.ModuleInfo ModInfo)
+        public override IList<SearchDocument> GetModifiedSearchDocuments(ModuleInfo modInfo, DateTime beginDate)
         {
+            var searchDocuments = new Dictionary<string, SearchDocument>();
 
-            SearchItemInfoCollection itmSearchColl = new SearchItemInfoCollection();
-            MediaInfo itm = GetMedia(ModInfo.ModuleID);
+            try
+            { 
+                var itmSearchColl = new SearchItemInfoCollection();
+                var itm = GetMedia(modInfo.ModuleID);
+                var key = string.Format(SEARCH_KEY_FORMAT, modInfo.ModuleID);
+                var content = string.Concat(itm.Alt, SEARCH_CONTENT_FORMAT, StripTags(itm.MediaMessage));
 
-            if (itm != null)
+                var searchDocument = new SearchDocument
+                {
+                    UniqueKey = key,
+                    PortalId = modInfo.PortalID,
+                    Body = content,
+                    ModifiedTimeUtc = itm.LastUpdatedDate,
+                    Title = modInfo.ModuleTitle,
+                    AuthorUserId = itm.LastUpdatedBy,
+                    Keywords = new Dictionary<string, string>
+                        {
+                            {SEARCH_TABID, modInfo.TabID.ToString()},
+                            {SEARCH_TABMODULEID, modInfo.TabModuleID.ToString()}
+                        }
+                };
+
+                searchDocuments.Add(key, searchDocument);
+            }
+            catch (Exception ex)
             {
-
-                string content = string.Concat(itm.Alt, " :: ", StripTags(itm.MediaMessage));
-
-                SearchItemInfo itmSearch = new SearchItemInfo(ModInfo.ModuleTitle, content, itm.LastUpdatedBy, itm.LastUpdatedDate, ModInfo.ModuleID, itm.ModuleID.ToString(), content);
-                itmSearchColl.Add(itmSearch);
-
+                Exceptions.LogException(ex);
             }
 
-            return itmSearchColl;
-
+            return searchDocuments.Values.ToList();
         }
 
         private string StripTags(string html)
         {
-
             string newHtml = html;
-            string replaceHtml = "(<(.|\\n)*?>|&lt;(.|\\n)*?&gt;)";
-            string replaceSpaces = "&(amp;)*nbsp;";
-            string replaceQuotes = "&(amp;)*quot;";
 
             newHtml = System.Web.HttpUtility.HtmlDecode(newHtml);
-            newHtml = Regex.Replace(newHtml, replaceHtml, "");
-            newHtml = Regex.Replace(newHtml, replaceSpaces, "");
-            newHtml = Regex.Replace(newHtml, replaceQuotes, "");
+            newHtml = Regex.Replace(newHtml, REPLACE_HTML, string.Empty);
+            newHtml = Regex.Replace(newHtml, REPLACE_SPACES, string.Empty);
+            newHtml = Regex.Replace(newHtml, REPLACE_QUOTES, string.Empty);
 
-            // for troubleshooting
+            // uncomment for troubleshooting
             //LogException(New Exception(String.Concat("newHtml = ", newHtml)))
 
             return newHtml;
-
         }
 
         #endregion
@@ -712,15 +698,12 @@ namespace DotNetNuke.Modules.Media
 
         private int GetModuleDefID(string ModuleName)
         {
-
             try
             {
-
-                DesktopModuleInfo desktopInfo = DesktopModuleController.GetDesktopModuleByModuleName(ModuleName, DotNetNuke.Entities.Portals.PortalController.GetCurrentPortalSettings().PortalId);
+                DesktopModuleInfo desktopInfo = DesktopModuleController.GetDesktopModuleByModuleName(ModuleName, PortalController.GetCurrentPortalSettings().PortalId);
                 ModuleDefinitionInfo modDefInfo = ModuleDefinitionController.GetModuleDefinitionByFriendlyName(ModuleName, desktopInfo.DesktopModuleID);
 
                 return modDefInfo.ModuleDefID;
-
             }
             catch
             {
@@ -728,11 +711,8 @@ namespace DotNetNuke.Modules.Media
                 // do nothing - an expected nullreference exception should happen here if the module is not going through the expected upgrade
                 return Null.NullInteger;
             }
-
         }
 
         #endregion
-
     }
-
 }
