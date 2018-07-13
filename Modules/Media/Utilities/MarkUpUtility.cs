@@ -1,6 +1,6 @@
 ﻿//
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,9 +18,10 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
+using DotNetNuke.Entities.Modules;
+using DotNetNuke.Entities.Portals;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -28,7 +29,6 @@ using System.Web;
 
 namespace DotNetNuke.Modules.Media
 {
-
 	public sealed class MediaMarkUpUtility
 	{
 
@@ -100,6 +100,7 @@ namespace DotNetNuke.Modules.Media
 #endregion
 
 		private string p_CurrentDomain = Null.NullString;
+
 		private string CurrentDomain
 		{
 			get
@@ -109,8 +110,8 @@ namespace DotNetNuke.Modules.Media
 					return p_CurrentDomain;
 				}
 
-				DotNetNuke.Entities.Portals.PortalSettings pSettings = null;
-				pSettings = DotNetNuke.Entities.Portals.PortalController.GetCurrentPortalSettings();
+				PortalSettings pSettings = null;
+				pSettings = PortalController.GetCurrentPortalSettings();
 
 				if (HttpContext.Current.Request.IsSecureConnection)
 				{
@@ -146,7 +147,6 @@ namespace DotNetNuke.Modules.Media
 
 		public MediaType GetMediaType(string MediaURL)
 		{
-
 			if (Regex.IsMatch(MediaURL, IMAGE_PATTERN, RegexOptions.IgnoreCase))
 			{
 				return MediaType.Image;
@@ -171,16 +171,14 @@ namespace DotNetNuke.Modules.Media
 			{
 				return MediaType.Unknown;
 			}
-
 		}
 
 #endregion
 
 #region  Get Media Mark-Up 
 
-		public string GetImageMarkUp(MediaInfo Media, Entities.Modules.ModuleInfo ModuleConfig)
+		public string GetImageMarkUp(MediaInfo Media, ModuleInfo ModuleConfig)
 		{
-
 			string strTagId = string.Concat(IMAGE_ID_PREFIX, Media.ModuleID.ToString());
 			string strAnchorId = string.Concat(ANCHOR_ID_PREFIX, strTagId);
 			string strDivId = string.Concat(DIV_ID_PREFIX, strTagId);
@@ -274,7 +272,6 @@ namespace DotNetNuke.Modules.Media
             // add the description, if necessary
 		    if (!string.IsNullOrEmpty(Media.MediaMessage))
 		    {
-
 		        var strDescriptionId = string.Concat(strDivId, DESCRIPTION);
 
 		        // build open div for description
@@ -291,16 +288,13 @@ namespace DotNetNuke.Modules.Media
                 // build the close div
                 sb.AppendFormat(CLOSE_TAG_FORMAT, DIV_TAG);
                 //
-
 		    }
 
 		    return sb.ToString();
-
 		}
 
-		public string GetFlashMarkUp(MediaInfo Media, DotNetNuke.Entities.Modules.ModuleInfo ModuleConfig)
+		public string GetFlashMarkUp(MediaInfo Media, ModuleInfo ModuleConfig)
 		{
-
 			string strFlashId = string.Concat(FLASH_ID_PREFIX, Media.ModuleID.ToString());
 			string strDivId = string.Concat(DIV_ID_PREFIX, strFlashId);
 			string strDivCssClass = string.Concat(DIV_CLASS, GetMediaAlignment(Media.MediaAlignment, ModuleConfig));
@@ -369,12 +363,10 @@ namespace DotNetNuke.Modules.Media
 			//
 
 			return sb.ToString();
-
 		}
 
-		public string GetWindowsMediaMarkUp(MediaInfo Media, DotNetNuke.Entities.Modules.ModuleInfo ModuleConfig)
+		public string GetWindowsMediaMarkUp(MediaInfo Media, ModuleInfo ModuleConfig)
 		{
-
 			string strWMediaId = string.Concat(WINDOWS_MEDIA_ID_PREFIX, Media.ModuleID.ToString());
 			string strDivId = string.Concat(DIV_ID_PREFIX, strWMediaId);
 			string strDivCssClass = string.Concat(DIV_CLASS, GetMediaAlignment(Media.MediaAlignment, ModuleConfig), " dnnmedia_wmp");
@@ -398,15 +390,18 @@ namespace DotNetNuke.Modules.Media
 			// build windows media object
 			sb.AppendFormat(OPEN_TAG_FORMAT, OBJECT_TAG);
 			sb.AppendFormat(ID_ATTRIBUTE, strWMediaId);
+
 			if (Media.Width > Null.NullInteger)
 			{
 				sb.AppendFormat(WIDTH_ATTRIBUTE, Media.Width);
 			}
-			if (Media.Height > Null.NullInteger)
+
+            if (Media.Height > Null.NullInteger)
 			{
 				sb.AppendFormat(HEIGHT_ATTRIBUTE, Media.Height);
 			}
-			sb.Append("classid=\"clsid:6BF52A52-394A-11d3-B153-00C04F79FAA6\"");
+
+            sb.Append("classid=\"clsid:6BF52A52-394A-11d3-B153-00C04F79FAA6\"");
 			sb.Append(CLOSE_BRACKET);
             sb.AppendFormat(PARAM_TAG_FORMAT, "url", Media.WebFriendlyUrl);
             sb.AppendFormat(PARAM_TAG_FORMAT, "src", Media.WebFriendlyUrl);
@@ -416,15 +411,18 @@ namespace DotNetNuke.Modules.Media
 			sb.Append("<!--[if !IE]> <-->");
 			sb.AppendFormat(OPEN_TAG_FORMAT, OBJECT_TAG);
             sb.AppendFormat(DATA_ATTRIBUTE, Media.WebFriendlyUrl);
-			if (Media.Width > Null.NullInteger)
+
+            if (Media.Width > Null.NullInteger)
 			{
 				sb.AppendFormat(WIDTH_ATTRIBUTE, Media.Width);
 			}
-			if (Media.Height > Null.NullInteger)
+
+            if (Media.Height > Null.NullInteger)
 			{
 				sb.AppendFormat(HEIGHT_ATTRIBUTE, Media.Height);
 			}
-			sb.Append("type=\"video/x-ms-wmv\"");
+
+            sb.Append("type=\"video/x-ms-wmv\"");
 			sb.Append(CLOSE_BRACKET);
             sb.AppendFormat(PARAM_TAG_FORMAT, "src", Media.WebFriendlyUrl);
 			sb.AppendFormat(PARAM_TAG_FORMAT, "controller", "true");
@@ -440,12 +438,10 @@ namespace DotNetNuke.Modules.Media
 			//
 
 			return sb.ToString();
-
 		}
 
-		public string GetRealPlayerMarkUp(MediaInfo Media, DotNetNuke.Entities.Modules.ModuleInfo ModuleConfig)
+		public string GetRealPlayerMarkUp(MediaInfo Media, ModuleInfo ModuleConfig)
 		{
-
 			string strRMediaId = string.Concat(REAL_PLAYER_ID_PREFIX, Media.ModuleID.ToString());
 			string strDivId = string.Concat(DIV_ID_PREFIX, strRMediaId);
 			string strDivCssClass = string.Concat(DIV_CLASS, GetMediaAlignment(Media.MediaAlignment, ModuleConfig), " dnnmedia_wmp");
@@ -476,15 +472,18 @@ namespace DotNetNuke.Modules.Media
 			// build real media player object
 			sb.AppendFormat(OPEN_TAG_FORMAT, OBJECT_TAG);
 			sb.AppendFormat(ID_ATTRIBUTE, strRMediaId);
-			if (Media.Width > Null.NullInteger)
+
+            if (Media.Width > Null.NullInteger)
 			{
 				sb.AppendFormat(WIDTH_ATTRIBUTE, Media.Width);
 			}
-			if (Media.Height > Null.NullInteger)
+
+            if (Media.Height > Null.NullInteger)
 			{
 				sb.AppendFormat(HEIGHT_ATTRIBUTE, Media.Height);
 			}
-			sb.Append("classid=\"clsid:CFCDAA03-8BE4-11cf-B84B-0020AFBBCCFA\"");
+
+            sb.Append("classid=\"clsid:CFCDAA03-8BE4-11cf-B84B-0020AFBBCCFA\"");
 			sb.Append(CLOSE_BRACKET);
             sb.AppendFormat(PARAM_TAG_FORMAT, SRC, Media.WebFriendlyUrl);
 			sb.AppendFormat(PARAM_TAG_FORMAT, MEDIA_LOOP, Media.MediaLoop);
@@ -495,15 +494,18 @@ namespace DotNetNuke.Modules.Media
 			sb.Append("<!--[if !IE]> <-->");
 			sb.AppendFormat(OPEN_TAG_FORMAT, OBJECT_TAG);
             sb.AppendFormat(DATA_ATTRIBUTE, Media.WebFriendlyUrl);
-			if (Media.Width > Null.NullInteger)
+
+            if (Media.Width > Null.NullInteger)
 			{
 				sb.AppendFormat(WIDTH_ATTRIBUTE, Media.Width);
 			}
-			if (Media.Height > Null.NullInteger)
+
+            if (Media.Height > Null.NullInteger)
 			{
 				sb.AppendFormat(HEIGHT_ATTRIBUTE, Media.Height);
 			}
-			sb.Append("type=\"audio/x-pn-realaudio-plugin\"");
+
+            sb.Append("type=\"audio/x-pn-realaudio-plugin\"");
 			sb.Append(CLOSE_BRACKET);
             sb.AppendFormat(PARAM_TAG_FORMAT, SRC, Media.WebFriendlyUrl);
 			sb.AppendFormat(PARAM_TAG_FORMAT, MEDIA_LOOP, Media.MediaLoop);
@@ -522,12 +524,10 @@ namespace DotNetNuke.Modules.Media
 			//
 
 			return sb.ToString();
-
 		}
 
-		public string GetQuicktimeMarkUp(MediaInfo Media, DotNetNuke.Entities.Modules.ModuleInfo ModuleConfig)
+		public string GetQuicktimeMarkUp(MediaInfo Media, ModuleInfo ModuleConfig)
 		{
-
 			string strQMediaId = string.Concat(QUICKTIME_ID_PREFIX, Media.ModuleID.ToString());
 			string strDivId = string.Concat(DIV_ID_PREFIX, strQMediaId);
 			string strDivCssClass = string.Concat(DIV_CLASS, GetMediaAlignment(Media.MediaAlignment, ModuleConfig), " dnnmedia_wmp");
@@ -559,15 +559,18 @@ namespace DotNetNuke.Modules.Media
 			// build quicktime object
 			sb.AppendFormat(OPEN_TAG_FORMAT, OBJECT_TAG);
 			sb.AppendFormat(ID_ATTRIBUTE, strQMediaId);
+
 			if (Media.Width > Null.NullInteger)
 			{
 				sb.AppendFormat(WIDTH_ATTRIBUTE, Media.Width);
 			}
-			if (Media.Height > Null.NullInteger)
+
+            if (Media.Height > Null.NullInteger)
 			{
 				sb.AppendFormat(HEIGHT_ATTRIBUTE, Media.Height);
 			}
-			// ISSUE 18955 - http://dnnmedia.codeplex.com/workitem/18955
+			
+            // ISSUE 18955 - http://dnnmedia.codeplex.com/workitem/18955
 			// Changed the clsid to be the correct one
 			sb.Append("classid=\"clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B\" ");
 			sb.Append("codebase=\"http://www.apple.com/qtactivex/qtplugin.cab\"");
@@ -579,15 +582,18 @@ namespace DotNetNuke.Modules.Media
 			sb.Append("<!--[if !IE]> <-->");
 			sb.AppendFormat(OPEN_TAG_FORMAT, OBJECT_TAG);
             sb.AppendFormat(DATA_ATTRIBUTE, Media.WebFriendlyUrl);
-			if (Media.Width > Null.NullInteger)
+
+            if (Media.Width > Null.NullInteger)
 			{
 				sb.AppendFormat(WIDTH_ATTRIBUTE, Media.Width);
 			}
-			if (Media.Height > Null.NullInteger)
+
+            if (Media.Height > Null.NullInteger)
 			{
 				sb.AppendFormat(HEIGHT_ATTRIBUTE, Media.Height);
 			}
-			sb.Append("type=\"video/quicktime\"");
+
+            sb.Append("type=\"video/quicktime\"");
 			sb.Append(CLOSE_BRACKET);
 			sb.AppendFormat(PARAM_TAG_FORMAT, "controller", "true");
 			sb.AppendFormat(PARAM_TAG_FORMAT, AUTOPLAY, Media.AutoStart);
@@ -602,14 +608,13 @@ namespace DotNetNuke.Modules.Media
 			//
 
 			return sb.ToString();
-
 		}
 
 #endregion
 
 #region  Private Methods 
 
-		private string GetMediaAlignment(int Alignment, DotNetNuke.Entities.Modules.ModuleInfo ModuleConfig)
+		private string GetMediaAlignment(int Alignment, ModuleInfo ModuleConfig)
 		{
 			switch (Alignment)
 			{
@@ -650,7 +655,7 @@ namespace DotNetNuke.Modules.Media
 		{
 			if (TrackClicks)
 			{
-				return MediaController.EncodeUrl(DotNetNuke.Common.Globals.LinkClick(Link, TabId, ModuleId, TrackClicks));
+				return MediaController.EncodeUrl(Globals.LinkClick(Link, TabId, ModuleId, TrackClicks));
 			}
 			else
 			{
@@ -661,5 +666,4 @@ namespace DotNetNuke.Modules.Media
 #endregion
 
 	}
-
 }

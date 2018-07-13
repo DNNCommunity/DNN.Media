@@ -1,6 +1,6 @@
 ﻿//
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -21,7 +21,9 @@
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
 using DotNetNuke.Entities.Modules;
+using DotNetNuke.Entities.Portals;
 using DotNetNuke.Security.Roles;
+using DotNetNuke.Services.Cache;
 using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.Journal;
 using DotNetNuke.Services.Social.Notifications;
@@ -32,6 +34,8 @@ using DotNetNuke.Services.FileSystem;
 using DotNetNuke.Security;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Web;
+using System.Globalization;
 using System.Web.UI.WebControls;
 using WillStrohl.API.oEmbed;
 
@@ -64,6 +68,11 @@ namespace DotNetNuke.Modules.Media
 
         public const string NOTIFICATION_TYPE = "DNNMedia_Module_Updated";
 
+        private const string DATE_FORMAT = "MM/dd/yyyy hh:mm:ss tt";
+
+        private const string MSG_SUCCESS_FORMAT = "<div class=\"dnnFormMessage dnnFormSuccess\">{0}</div>";
+        private const string MSG_WARNING_FORMAT = "<div class=\"dnnFormMessage dnnFormWarning\">{0}</div>";
+
         #endregion
 
         #region  Properties
@@ -72,14 +81,14 @@ namespace DotNetNuke.Modules.Media
         {
             get
             {
-                if (!(string.IsNullOrEmpty(this.p_SupportedMediaFileTypes)))
+                if (!(string.IsNullOrEmpty(p_SupportedMediaFileTypes)))
                 {
-                    return this.p_SupportedMediaFileTypes;
+                    return p_SupportedMediaFileTypes;
                 }
 
-                this.p_SupportedMediaFileTypes = string.Concat(Globals.glbImageFileTypes, ",", MediaController.MEDIA_FILE_TYPES);
+                p_SupportedMediaFileTypes = string.Concat(Globals.glbImageFileTypes, ",", MediaController.MEDIA_FILE_TYPES);
 
-                return this.p_SupportedMediaFileTypes;
+                return p_SupportedMediaFileTypes;
             }
         }
 
@@ -87,7 +96,7 @@ namespace DotNetNuke.Modules.Media
         {
             get
             {
-                return string.Format(SUPPORTED_IMAGE, this.GetLocalizedString("SupportedImage.Text"));
+                return string.Format(SUPPORTED_IMAGE, GetLocalizedString("SupportedImage.Text"));
             }
         }
 
@@ -95,7 +104,7 @@ namespace DotNetNuke.Modules.Media
         {
             get
             {
-                return string.Format(UNSUPPORTED_IMAGE, this.GetLocalizedString("UnsupportedImage.Text"));
+                return string.Format(UNSUPPORTED_IMAGE, GetLocalizedString("UnsupportedImage.Text"));
             }
         }
 
@@ -103,9 +112,9 @@ namespace DotNetNuke.Modules.Media
         {
             get
             {
-                if (!(string.IsNullOrEmpty(this.p_LastUpdated)))
+                if (!string.IsNullOrEmpty(p_LastUpdated))
                 {
-                    return this.p_LastUpdated;
+                    return p_LastUpdated;
                 }
 
                 MediaController objMediaController = new MediaController();
@@ -113,19 +122,19 @@ namespace DotNetNuke.Modules.Media
 
                 if (objMedia != null)
                 {
-                    UserInfo user = UserController.GetUserById(this.PortalId, objMedia.LastUpdatedBy);
+                    UserInfo user = UserController.GetUserById(PortalId, objMedia.LastUpdatedBy);
 
                     if (user != null)
                     {
-                        this.p_LastUpdated = string.Format(this.GetLocalizedString("lblLastUpdated.Text"), user.DisplayName, objMedia.LastUpdatedDate.ToString("MM/dd/yyyy hh:mm:ss tt"));
+                        p_LastUpdated = string.Format(GetLocalizedString("lblLastUpdated.Text"), user.DisplayName, objMedia.LastUpdatedDate.ToString(DATE_FORMAT));
                     }
                     else
                     {
-                        this.p_LastUpdated = string.Format(this.GetLocalizedString("lblLastUpdated.Text"), this.GetLocalizedString("Unknown.Text"), objMedia.LastUpdatedDate.ToString("MM/dd/yyyy hh:mm:ss tt"));
+                        p_LastUpdated = string.Format(GetLocalizedString("lblLastUpdated.Text"), GetLocalizedString("Unknown.Text"), objMedia.LastUpdatedDate.ToString(DATE_FORMAT));
                     }
                 }
 
-                return this.p_LastUpdated;
+                return p_LastUpdated;
             }
         }
 
@@ -167,13 +176,13 @@ namespace DotNetNuke.Modules.Media
         private void InitializeComponent()
         {
             //INSTANT C# NOTE: Converted event handler wireups:
-            this.Load += new System.EventHandler(Page_Load);
-            cmdCancel.Click += new System.EventHandler(cmdCancel_Click);
-            cmdUpdate.Click += new System.EventHandler(cmdUpdate_Click);
-            cvMediaType.ServerValidate += new System.Web.UI.WebControls.ServerValidateEventHandler(cvMediaType_ServerValidate);
-            radMediaType.SelectedIndexChanged += new System.EventHandler(radMediaType_SelectedIndexChanged);
-            lnkOEmbed.Click += new System.EventHandler(lnkOEmbed_Click);
-            chkOverrideJournalSetting.CheckedChanged += new System.EventHandler(chkOverrideJournalSetting_CheckedChanged);
+            Load += new EventHandler(Page_Load);
+            cmdCancel.Click += new EventHandler(cmdCancel_Click);
+            cmdUpdate.Click += new EventHandler(cmdUpdate_Click);
+            cvMediaType.ServerValidate += new ServerValidateEventHandler(cvMediaType_ServerValidate);
+            radMediaType.SelectedIndexChanged += new EventHandler(radMediaType_SelectedIndexChanged);
+            lnkOEmbed.Click += new EventHandler(lnkOEmbed_Click);
+            chkOverrideJournalSetting.CheckedChanged += new EventHandler(chkOverrideJournalSetting_CheckedChanged);
         }
 
         /// <summary>
@@ -183,7 +192,7 @@ namespace DotNetNuke.Modules.Media
         /// </remarks>
         /// <history>
         /// </history>
-        private void Page_Load(object sender, System.EventArgs e)
+        private void Page_Load(object sender, EventArgs e)
         {
             try
             {
@@ -195,18 +204,16 @@ namespace DotNetNuke.Modules.Media
 
                 if (!Page.IsPostBack)
                 {
-                    this.BindData();
+                    BindData();
                 }
 
                 //Save the IsNew state to the ViewState
                 ViewState["IsNew"] = p_isNew;
-
             }
             catch (Exception exc) //Module failed to load
             {
                 Exceptions.ProcessModuleLoadException(this, exc, UserInfo.IsSuperUser);
             }
-
         }
 
         /// <summary>
@@ -218,9 +225,7 @@ namespace DotNetNuke.Modules.Media
         /// </history>
         private void cmdCancel_Click(object sender, EventArgs e)
         {
-
-            this.SendBackToModule();
-
+            SendBackToModule();
         }
 
         /// <summary>
@@ -232,19 +237,16 @@ namespace DotNetNuke.Modules.Media
         /// </history>
         private void cmdUpdate_Click(object sender, EventArgs e)
         {
-
             if (Page.IsValid)
             {
-                this.SaveMedia();
-                this.SendBackToModule();
+                SaveMedia();
+                SendBackToModule();
             }
-
         }
 
-        private void cvMediaType_ServerValidate(object source, System.Web.UI.WebControls.ServerValidateEventArgs args)
+        private void cvMediaType_ServerValidate(object source, ServerValidateEventArgs args)
         {
-
-            switch (this.radMediaType.SelectedIndex)
+            switch (radMediaType.SelectedIndex)
             {
                 case 0:
                     if (string.IsNullOrEmpty(ctlURL.Url))
@@ -265,32 +267,31 @@ namespace DotNetNuke.Modules.Media
                     }
                     break;
             }
-
         }
 
-        private void radMediaType_SelectedIndexChanged(object sender, System.EventArgs e)
+        private void radMediaType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.ToggleFileTypeView(this.radMediaType.SelectedIndex);
+            ToggleFileTypeView(radMediaType.SelectedIndex);
         }
 
-        private void lnkOEmbed_Click(object sender, System.EventArgs e)
+        private void lnkOEmbed_Click(object sender, EventArgs e)
         {
 
-            if (!(string.IsNullOrEmpty(this.txtOEmbed.Text)))
+            if (!(string.IsNullOrEmpty(txtOEmbed.Text)))
             {
                 ProviderFormat ctlOEmbedProvider = new ProviderFormat();
-                if (ctlOEmbedProvider.IsUrlSupported(this.txtOEmbed.Text))
+                if (ctlOEmbedProvider.IsUrlSupported(txtOEmbed.Text))
                 {
-                    this.lblOEmbedCheck.Text = string.Concat("<div class=\"dnnFormMessage dnnFormSuccess\">", this.GetLocalizedString("lblOEmbedCheck.Text.Supported"), "</div>");
+                    lblOEmbedCheck.Text = string.Format(MSG_SUCCESS_FORMAT, GetLocalizedString("lblOEmbedCheck.Text.Supported"));
                 }
                 else
                 {
-                    this.lblOEmbedCheck.Text = string.Concat("<div class=\"dnnFormMessage dnnFormWarning\">", this.GetLocalizedString("lblOEmbedCheck.Text.Unsupported"), "</div>");
+                    lblOEmbedCheck.Text = string.Format(MSG_WARNING_FORMAT, GetLocalizedString("lblOEmbedCheck.Text.Unsupported"));
                 }
             }
             else
             {
-                this.lblOEmbedCheck.Text = string.Concat("<div class=\"dnnFormMessage dnnFormWarning\">", this.GetLocalizedString("lblOEmbedCheck.Text.EmptyString"), "</div>");
+                lblOEmbedCheck.Text = string.Format(MSG_WARNING_FORMAT, GetLocalizedString("lblOEmbedCheck.Text.EmptyString"));
             }
 
         }
@@ -306,48 +307,47 @@ namespace DotNetNuke.Modules.Media
 
         private void BindData()
         {
-
-            this.LocalizeModule();
+            LocalizeModule();
 
             // Obtain a single row of text information
             MediaController objMediaController = new MediaController();
             MediaInfo objMedia = objMediaController.GetMedia(ModuleId);
 
-            this.BindControls();
+            BindControls();
 
             if (objMedia != null && objMedia.ModuleID > Null.NullInteger)
             {
                 p_isNew = false;
-                this.ddlImageAlignment.SelectedValue = objMedia.MediaAlignment.ToString();
-                this.ToggleFileTypeView(objMedia.MediaType);
+                ddlImageAlignment.SelectedValue = objMedia.MediaAlignment.ToString();
+                ToggleFileTypeView(objMedia.MediaType);
                 switch (objMedia.MediaType)
                 {
                     case 0: // local file system
-                        this.ctlURL.Url = objMedia.Src;
+                        ctlURL.Url = objMedia.Src;
                         break;
                     case 1: // embed code
-                        this.txtEmbed.Text = System.Web.HttpUtility.HtmlDecode(objMedia.Src);
+                        txtEmbed.Text = HttpUtility.HtmlDecode(objMedia.Src);
                         break;
                     case 2: // embedable url
-                        this.txtOEmbed.Text = objMedia.Src;
+                        txtOEmbed.Text = objMedia.Src;
                         break;
                 }
-                this.txtAlt.Text = objMedia.Alt;
+                txtAlt.Text = objMedia.Alt;
                 if (objMedia.Width != Null.NullInteger)
                 {
-                    this.txtWidth.Text = objMedia.Width.ToString();
+                    txtWidth.Text = objMedia.Width.ToString();
                 }
                 if (objMedia.Height != Null.NullInteger)
                 {
-                    this.txtHeight.Text = objMedia.Height.ToString();
+                    txtHeight.Text = objMedia.Height.ToString();
                 }
-                this.ctlNavigateUrl.Url = objMedia.NavigateUrl;
-                this.ctlTracking.URL = objMedia.NavigateUrl;
-                this.ctlTracking.ModuleID = ModuleId;
-                this.chkAutoStart.Checked = objMedia.AutoStart;
-                this.chkLoop.Checked = objMedia.MediaLoop;
+                ctlNavigateUrl.Url = objMedia.NavigateUrl;
+                ctlTracking.URL = objMedia.NavigateUrl;
+                ctlTracking.ModuleID = ModuleId;
+                chkAutoStart.Checked = objMedia.AutoStart;
+                chkLoop.Checked = objMedia.MediaLoop;
 
-                this.txtMessage.Text = objMedia.MediaMessage;
+                txtMessage.Text = objMedia.MediaMessage;
             }
             else
             {
@@ -358,7 +358,7 @@ namespace DotNetNuke.Modules.Media
             BindSettings();
 
             // populate the support file types in the UI
-            this.BindSupportedFileTypes();
+            BindSupportedFileTypes();
 
             ToggleSettingViews();
 
@@ -383,12 +383,11 @@ namespace DotNetNuke.Modules.Media
             ctlNavigateUrl.ShowTabs = true;
             ctlNavigateUrl.ShowFiles = true;
 
-            this.ToggleFileTypeView(-1);
+            ToggleFileTypeView(-1);
         }
 
         private void BindSupportedFileTypes()
         {
-
             List<FileTypeInfo> collFiles = new List<FileTypeInfo>();
             object objCache = DotNetNuke.Services.Cache.CachingProvider.Instance().GetItem(FILE_TYPES_CACHE_KEY);
 
@@ -404,21 +403,22 @@ namespace DotNetNuke.Modules.Media
 
                 foreach (string oString in arrModuleSupport)
                 {
-                    FileTypeInfo oFile = new FileTypeInfo();
-                    oFile.FileType = oString.ToLower();
-                    oFile.ModuleSupport = true;
-                    oFile.HostSupport = arrHostSupport.Contains(oString);
+                    FileTypeInfo oFile = new FileTypeInfo
+                    {
+                        FileType = oString.ToLower(),
+                        ModuleSupport = true,
+                        HostSupport = arrHostSupport.Contains(oString)
+                    };
                     collFiles.Add(oFile);
                 }
 
                 collFiles.Sort((p1, p2) => p1.FileType.CompareTo(p2.FileType));
 
-                DotNetNuke.Services.Cache.CachingProvider.Instance().Insert(FILE_TYPES_CACHE_KEY, collFiles);
-
+                CachingProvider.Instance().Insert(FILE_TYPES_CACHE_KEY, collFiles);
             }
 
-            this.rptMediaFileTypes.DataSource = collFiles;
-            this.rptMediaFileTypes.DataBind();
+            rptMediaFileTypes.DataSource = collFiles;
+            rptMediaFileTypes.DataBind();
 
         }
 
@@ -432,34 +432,34 @@ namespace DotNetNuke.Modules.Media
 
         private void LocalizeModule()
         {
-            p_UseModuleSettings = this.GetLocalizedString("UseModuleSettings.Text");
-            p_None = this.GetLocalizedString("None.Text");
-            p_Left = this.GetLocalizedString("Left.Text");
-            p_Center = this.GetLocalizedString("Center.Text");
-            p_Right = this.GetLocalizedString("Right.Text");
+            p_UseModuleSettings = GetLocalizedString("UseModuleSettings.Text");
+            p_None = GetLocalizedString("None.Text");
+            p_Left = GetLocalizedString("Left.Text");
+            p_Center = GetLocalizedString("Center.Text");
+            p_Right = GetLocalizedString("Right.Text");
 
             if (radMediaType.Items.Count == 0)
             {
-                this.radMediaType.Items.Insert(0, new ListItem(this.GetLocalizedString("radMediaType.Items.0"), "0"));
-                this.radMediaType.Items.Insert(1, new ListItem(this.GetLocalizedString("radMediaType.Items.1"), "1"));
-                this.radMediaType.Items.Insert(2, new ListItem(this.GetLocalizedString("radMediaType.Items.2"), "2"));
+                radMediaType.Items.Insert(0, new ListItem(GetLocalizedString("radMediaType.Items.0"), "0"));
+                radMediaType.Items.Insert(1, new ListItem(GetLocalizedString("radMediaType.Items.1"), "1"));
+                radMediaType.Items.Insert(2, new ListItem(GetLocalizedString("radMediaType.Items.2"), "2"));
             }
 
-            this.txtEmbed.Attributes["title"] = this.GetLocalizedString("plEmbed.Help");
-            this.txtOEmbed.Attributes["title"] = this.GetLocalizedString("plOEmbed.Help");
-            this.txtAlt.Attributes["title"] = this.GetLocalizedString("plAlt.Help");
-            this.txtWidth.Attributes["title"] = this.GetLocalizedString("plWidth.Help");
-            this.txtHeight.Attributes["title"] = this.GetLocalizedString("plHeight.Help");
-            this.ddlImageAlignment.Attributes["title"] = this.GetLocalizedString("plAlignment.Help");
-            this.chkAutoStart.Attributes["title"] = this.GetLocalizedString("lblAutoStart.Help");
-            this.chkLoop.Attributes["title"] = this.GetLocalizedString("lblLoop.Help");
+            txtEmbed.Attributes["title"] = GetLocalizedString("plEmbed.Help");
+            txtOEmbed.Attributes["title"] = GetLocalizedString("plOEmbed.Help");
+            txtAlt.Attributes["title"] = GetLocalizedString("plAlt.Help");
+            txtWidth.Attributes["title"] = GetLocalizedString("plWidth.Help");
+            txtHeight.Attributes["title"] = GetLocalizedString("plHeight.Help");
+            ddlImageAlignment.Attributes["title"] = GetLocalizedString("plAlignment.Help");
+            chkAutoStart.Attributes["title"] = GetLocalizedString("lblAutoStart.Help");
+            chkLoop.Attributes["title"] = GetLocalizedString("lblLoop.Help");
 
-            this.valAltText.ErrorMessage = this.GetLocalizedString("valAltText.ErrorMessage");
-            this.valHeight.ErrorMessage = this.GetLocalizedString("valHeight.ErrorMessage");
-            this.valWidth.ErrorMessage = this.GetLocalizedString("valWidth.ErrorMessage");
-            this.cvMediaType.ErrorMessage = this.GetLocalizedString("valMediaType.ErrorMessage");
+            valAltText.ErrorMessage = GetLocalizedString("valAltText.ErrorMessage");
+            valHeight.ErrorMessage = GetLocalizedString("valHeight.ErrorMessage");
+            valWidth.ErrorMessage = GetLocalizedString("valWidth.ErrorMessage");
+            cvMediaType.ErrorMessage = GetLocalizedString("valMediaType.ErrorMessage");
 
-            this.lnkOEmbed.Text = this.GetLocalizedString("lnkOEmbed.Text");
+            lnkOEmbed.Text = GetLocalizedString("lnkOEmbed.Text");
         }
 
         #endregion
@@ -468,27 +468,26 @@ namespace DotNetNuke.Modules.Media
 
         private void SaveMedia()
         {
-
             var objMediaController = new MediaController();
             var objMedia = new MediaInfo();
 
             try
             {
                 // Update settings in the database
-                if (this.radMediaType.SelectedIndex == 0) // standard file system
+                if (radMediaType.SelectedIndex == 0) // standard file system
                 {
                     if (string.Equals(ctlURL.UrlType, "F"))
                     {
-                        IFileInfo objFile = FileManager.Instance.GetFile(int.Parse(Regex.Match(this.ctlURL.Url, "\\d+").Value, System.Globalization.NumberStyles.Integer));
+                        IFileInfo objFile = FileManager.Instance.GetFile(int.Parse(Regex.Match(ctlURL.Url, "\\d+").Value, NumberStyles.Integer));
                         if (objFile != null)
                         {
-                            if (string.IsNullOrEmpty(this.txtWidth.Text))
+                            if (string.IsNullOrEmpty(txtWidth.Text))
                             {
-                                this.txtWidth.Text = objFile.Width.ToString();
+                                txtWidth.Text = objFile.Width.ToString();
                             }
-                            if (string.IsNullOrEmpty(this.txtHeight.Text))
+                            if (string.IsNullOrEmpty(txtHeight.Text))
                             {
-                                this.txtHeight.Text = objFile.Height.ToString();
+                                txtHeight.Text = objFile.Height.ToString();
                             }
                         }
                     }
@@ -497,42 +496,45 @@ namespace DotNetNuke.Modules.Media
                 var sec = new PortalSecurity();
 
                 objMedia.ModuleID = ModuleId;
-                objMedia.MediaType = this.radMediaType.SelectedIndex;
-                switch (this.radMediaType.SelectedIndex)
+                objMedia.MediaType = radMediaType.SelectedIndex;
+                switch (radMediaType.SelectedIndex)
                 {
                     case 0: // standard file system
-                        objMedia.Src = this.ctlURL.Url;
+                        objMedia.Src = ctlURL.Url;
                         break;
                     case 1: // embed code
-                        objMedia.Src = this.txtEmbed.Text;
+                        objMedia.Src = txtEmbed.Text;
                         break;
                     case 2: // oembed url
-                        objMedia.Src = this.txtOEmbed.Text;
+                        objMedia.Src = txtOEmbed.Text;
                         break;
                 }
 
                 // ensure that youtube gets formatted correctly
                 objMedia.Src = ReformatForYouTube(objMedia.Src);
 
-                objMedia.Alt = sec.InputFilter(this.txtAlt.Text, PortalSecurity.FilterFlag.NoMarkup);
-                if (!(string.IsNullOrEmpty(this.txtWidth.Text)))
+                objMedia.Alt = sec.InputFilter(txtAlt.Text, PortalSecurity.FilterFlag.NoMarkup);
+
+                if (!string.IsNullOrEmpty(txtWidth.Text))
                 {
-                    objMedia.Width = int.Parse(sec.InputFilter(this.txtWidth.Text, PortalSecurity.FilterFlag.NoMarkup), System.Globalization.NumberStyles.Integer);
+                    objMedia.Width = int.Parse(sec.InputFilter(txtWidth.Text, PortalSecurity.FilterFlag.NoMarkup), NumberStyles.Integer);
                 }
-                if (!(string.IsNullOrEmpty(this.txtHeight.Text)))
+
+                if (!string.IsNullOrEmpty(txtHeight.Text))
                 {
-                    objMedia.Height = int.Parse(sec.InputFilter(this.txtHeight.Text, PortalSecurity.FilterFlag.NoMarkup), System.Globalization.NumberStyles.Integer);
+                    objMedia.Height = int.Parse(sec.InputFilter(txtHeight.Text, PortalSecurity.FilterFlag.NoMarkup), NumberStyles.Integer);
                 }
-                objMedia.NavigateUrl = sec.InputFilter(this.ctlNavigateUrl.Url, PortalSecurity.FilterFlag.NoMarkup);
-                objMedia.MediaAlignment = int.Parse(sec.InputFilter(this.ddlImageAlignment.SelectedValue, PortalSecurity.FilterFlag.NoMarkup), System.Globalization.NumberStyles.Integer);
-                objMedia.AutoStart = this.chkAutoStart.Checked;
-                objMedia.MediaLoop = this.chkLoop.Checked;
-                objMedia.LastUpdatedBy = this.UserId;
-                objMedia.MediaMessage = sec.InputFilter(this.txtMessage.Text, PortalSecurity.FilterFlag.NoScripting);
+
+                objMedia.NavigateUrl = sec.InputFilter(ctlNavigateUrl.Url, PortalSecurity.FilterFlag.NoMarkup);
+                objMedia.MediaAlignment = int.Parse(sec.InputFilter(ddlImageAlignment.SelectedValue, PortalSecurity.FilterFlag.NoMarkup), NumberStyles.Integer);
+                objMedia.AutoStart = chkAutoStart.Checked;
+                objMedia.MediaLoop = chkLoop.Checked;
+                objMedia.LastUpdatedBy = UserId;
+                objMedia.MediaMessage = sec.InputFilter(txtMessage.Text, PortalSecurity.FilterFlag.NoScripting);
 
                 // url tracking
                 var objUrls = new UrlController();
-                objUrls.UpdateUrl(PortalId, this.ctlNavigateUrl.Url, this.ctlNavigateUrl.UrlType, this.ctlNavigateUrl.Log, this.ctlNavigateUrl.Track, ModuleId, this.ctlNavigateUrl.NewWindow);
+                objUrls.UpdateUrl(PortalId, ctlNavigateUrl.Url, ctlNavigateUrl.UrlType, ctlNavigateUrl.Log, ctlNavigateUrl.Track, ModuleId, ctlNavigateUrl.NewWindow);
 
                 // update settings/preferences
                 SaveMediaSettings();
@@ -554,14 +556,11 @@ namespace DotNetNuke.Modules.Media
 
                 // notify the site administrators
                 if (NotifyOnUpdate) SendNotificationToMessageCenter(objMedia);
-
             }
             catch (Exception exc) //Module failed to load
             {
                 Exceptions.LogException(exc);
-                //ProcessModuleLoadException(Me, exc)
             }
-
         }
 
         /// <summary>
@@ -572,7 +571,7 @@ namespace DotNetNuke.Modules.Media
         /// </remarks>
         private void SaveMediaSettings()
         {
-            Entities.Modules.ModuleController ctlModule = new Entities.Modules.ModuleController();
+            Entities.Modules.ModuleController ctlModule = new ModuleController();
 
             // save settings to the module settings data store
             ctlModule.UpdateModuleSetting(ModuleId, MediaController.SETTING_POSTTOJOURNAL, chkPostToJournal.Checked.ToString());
@@ -586,14 +585,14 @@ namespace DotNetNuke.Modules.Media
             if (IsCurrentUserAdmin)
             {
                 // save settings to the portal settings data store
-                Entities.Portals.PortalController.UpdatePortalSetting(PortalId, MediaController.SETTING_POSTTOJOURNAL, chkPostToJournal.Checked.ToString(), true, PortalSettings.CultureCode);
-                Entities.Portals.PortalController.UpdatePortalSetting(PortalId, MediaController.SETTING_POSTTOJOURNALSITEWIDE, chkPostToJournalSiteWide.Checked.ToString(), true, PortalSettings.CultureCode);
+                PortalController.UpdatePortalSetting(PortalId, MediaController.SETTING_POSTTOJOURNAL, chkPostToJournal.Checked.ToString(), true, PortalSettings.CultureCode);
+                PortalController.UpdatePortalSetting(PortalId, MediaController.SETTING_POSTTOJOURNALSITEWIDE, chkPostToJournalSiteWide.Checked.ToString(), true, PortalSettings.CultureCode);
 
-                Entities.Portals.PortalController.UpdatePortalSetting(PortalId, MediaController.SETTING_NOTIFYONUPDATE, chkNotifyOnUpdate.Checked.ToString(), true, PortalSettings.CultureCode);
+                PortalController.UpdatePortalSetting(PortalId, MediaController.SETTING_NOTIFYONUPDATE, chkNotifyOnUpdate.Checked.ToString(), true, PortalSettings.CultureCode);
             }
 
             // force the module to use the new settings
-            Entities.Modules.ModuleController.SynchronizeModule(ModuleId);
+            ModuleController.SynchronizeModule(ModuleId);
         }
 
         #endregion
@@ -602,7 +601,6 @@ namespace DotNetNuke.Modules.Media
 
         private void SendBackToModule()
         {
-
             try
             {
                 Response.Redirect(Globals.NavigateURL(), true);
@@ -611,7 +609,6 @@ namespace DotNetNuke.Modules.Media
             {
                 // do nothing
             }
-
         }
 
         #endregion
@@ -620,7 +617,6 @@ namespace DotNetNuke.Modules.Media
 
         protected string GetSupportedImage(object oValue)
         {
-
             if (oValue != null)
             {
                 var strValue = oValue.ToString();
@@ -637,33 +633,28 @@ namespace DotNetNuke.Modules.Media
             {
                 return UnsupportedImage;
             }
-
         }
 
         private void ToggleFileTypeView(int Selected)
         {
-
             if (Selected < 0 | Selected > 2)
             {
                 Selected = 0;
             }
 
-            this.radMediaType.SelectedIndex = Selected;
+            radMediaType.SelectedIndex = Selected;
 
-            this.liFileSystem.Visible = (Selected == 0);
-            this.liEmbed.Visible = (Selected == 1);
-            this.liOEmbed.Visible = (Selected == 2);
-
+            liFileSystem.Visible = (Selected == 0);
+            liEmbed.Visible = (Selected == 1);
+            liOEmbed.Visible = (Selected == 2);
         }
 
         private string ReformatForYouTube(string embedCode)
         {
-
             string strReturn = Server.HtmlDecode(embedCode);
 
             if (Regex.IsMatch(strReturn, YOUTUBE_EMBED_MATCH, RegexOptions.IgnoreCase))
             {
-
                 // this is an embed code
                 string strUrl = Regex.Match(embedCode, YOUTUBE_EMBED_MATCH, RegexOptions.IgnoreCase).Groups[1].Value;
 
@@ -673,23 +664,19 @@ namespace DotNetNuke.Modules.Media
                 }
 
                 strReturn = Regex.Replace(embedCode, YOUTUBE_EMBED_URL_MATCH, strUrl, RegexOptions.IgnoreCase);
-
             }
             else if (Regex.IsMatch(strReturn, YOUTUBE_MATCH, RegexOptions.IgnoreCase))
             {
-
                 // this is a URL
                 if (!(Regex.IsMatch(strReturn, YOUTUBE_OPAQUE_MATCH, RegexOptions.IgnoreCase)))
                 {
                     strReturn = (strReturn.Contains("?")) ? string.Concat(strReturn, "&", YOUTUBE_OPAQUE) : string.Concat(strReturn, "?", YOUTUBE_OPAQUE);
                 }
-
             }
 
             var sec = new PortalSecurity();
 
             return sec.InputFilter(strReturn, PortalSecurity.FilterFlag.NoMarkup);
-
         }
 
         private void ToggleSettingViews()
@@ -706,7 +693,6 @@ namespace DotNetNuke.Modules.Media
             {
                 chkPostToJournal.Enabled = true;
             }
-
 
             // enabke the override capability with:
             // 1. Site-wide setting is enabled
@@ -796,10 +782,10 @@ namespace DotNetNuke.Modules.Media
                         ImageUrl = "\"/DesktopModules/Media/Images/play-button.png\"", 
                         Description = desc, 
                         Title = oMedia.Alt, 
-                        Url = Common.Globals.NavigateURL(TabId) },  // used to populate the journal item template, depending on the journal type
+                        Url = Globals.NavigateURL(TabId) },  // used to populate the journal item template, depending on the journal type
                     Summary = string.Format(GetLocalizedString("Journal.Status.Media.Updated"), 
                         oMedia.Alt, 
-                        Common.Globals.NavigateURL(TabId), 
+                        Globals.NavigateURL(TabId), 
                         tabTitle),  // the text shown in the journal status
                     Body = null,  // not really used in the default templates, but could be in your own
                     JournalTypeId = MediaController.GetMediaJournalTypeID(PortalId),  // local method to choose the journal type globally

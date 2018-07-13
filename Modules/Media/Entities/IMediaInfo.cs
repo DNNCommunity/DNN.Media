@@ -1,6 +1,6 @@
 ﻿//
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,7 +18,6 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-//INSTANT C# NOTE: Formerly VB project-level imports:
 using DotNetNuke;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
@@ -31,7 +30,6 @@ using System.Diagnostics;
 
 namespace DotNetNuke.Modules.Media
 {
-
 	public interface IMediaInfo
 	{
 		int ModuleId { get; set; }
@@ -51,5 +49,4 @@ namespace DotNetNuke.Modules.Media
         string WebFriendlyUrl { get; set; }
         string ContentType { get; set; }
 	}
-
 }

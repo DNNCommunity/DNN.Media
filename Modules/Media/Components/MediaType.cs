@@ -1,6 +1,6 @@
 ﻿//
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,12 +18,6 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-//INSTANT C# NOTE: Formerly VB project-level imports:
-using DotNetNuke;
-using DotNetNuke.Common;
-using DotNetNuke.Common.Utilities;
-using DotNetNuke.Services.Exceptions;
-using DotNetNuke.Services.Localization;
 using System;
 using System.Collections;
 using System.Data;
@@ -31,7 +25,6 @@ using System.Diagnostics;
 
 namespace DotNetNuke.Modules.Media
 {
-
 	public enum MediaType: int
 	{
 		Unknown,
@@ -41,5 +34,4 @@ namespace DotNetNuke.Modules.Media
 		Quicktime,
 		RealPlayer
 	}
-
 }

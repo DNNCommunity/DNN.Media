@@ -1,6 +1,6 @@
 //
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,6 +18,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+using DotNetNuke.Entities.Modules;
 using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Framework;
 using DotNetNuke.Framework.JavaScriptLibraries;
@@ -35,7 +36,7 @@ namespace DotNetNuke.Modules.Media
     /// </summary>
     /// <remarks>
     /// </remarks>
-    public partial class MediaModule : MediaModuleBase, DotNetNuke.Entities.Modules.IActionable
+    public partial class MediaModule : MediaModuleBase, IActionable
     {
 
         #region  Constants
@@ -101,8 +102,7 @@ namespace DotNetNuke.Modules.Media
                 if (IsEditable)
                 {
                     // there is no media yet
-                    DNNSkins.Skin.AddModuleMessage(this, GetLocalizedString("NoMediaMessage.Text"),
-                                                   ModuleMessage.ModuleMessageType.BlueInfo);
+                    DNNSkins.Skin.AddModuleMessage(this, GetLocalizedString("NoMediaMessage.Text"), ModuleMessage.ModuleMessageType.BlueInfo);
                 }
                 else
                 {

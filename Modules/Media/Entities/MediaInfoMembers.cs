@@ -1,6 +1,6 @@
 ﻿//
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,7 +18,6 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-//INSTANT C# NOTE: Formerly VB project-level imports:
 using DotNetNuke;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
@@ -31,10 +30,8 @@ using System.Diagnostics;
 
 namespace DotNetNuke.Modules.Media
 {
-
 	public sealed class MediaInfoMembers
 	{
-
 		public const string ModuleIdField = "ModuleID";
 		public const string SrcField = "Src";
 		public const string AltField = "alt";
@@ -54,7 +51,5 @@ namespace DotNetNuke.Modules.Media
 		public const string MediaMessageField = "MediaMessage";
 		public const string LastUpdatedByField = "LastUpdatedBy";
 		public const string LastUpdatedDateField = "LastUpdatedDate";
-
 	}
-
 }
