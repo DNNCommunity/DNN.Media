@@ -1,6 +1,6 @@
 ﻿<dotnetnuke type="Package" version="6.0">
   <packages>
-    <package name="DNN_Media" type="Module" version="04.04.02">
+    <package name="DNN_Media" type="Module" version="05.00.00">
       <friendlyName>Media</friendlyName>
       <description>This module renders Media files of various kinds, including social media, images, videos, music, and more.</description>
       <iconFile>Images/logo/dnnmedia-logo-150x150.png</iconFile>
@@ -70,10 +70,15 @@
               <name>04.04.02.SqlDataProvider</name>
               <version>04.04.02</version>
             </script>
+            <script type="Install">
+              <path>Providers\DataProviders\SqlDataProvider</path>
+              <name>05.00.00.SqlDataProvider</name>
+              <version>05.00.00</version>
+            </script>
             <script type="UnInstall">
               <path>Providers\DataProviders\SqlDataProvider</path>
               <name>Uninstall.SqlDataProvider</name>
-              <version>04.04.02</version>
+              <version>05.00.00</version>
             </script>
           </scripts>
         </component>
@@ -124,7 +129,7 @@
             <attributes>
               <businessControllerClass>DotNetNuke.Modules.Media.MediaController, DotNetNuke.Modules.Media</businessControllerClass>
               <desktopModuleID>[DESKTOPMODULEID]</desktopModuleID>
-              <upgradeVersionsList>03.02.00,03.02.03,03.03.00,04.00.00,04.01.00,04.02.00,04.03.00,04.04.00,04.04.01,04.04.02</upgradeVersionsList>
+              <upgradeVersionsList>03.02.00,03.02.03,03.03.00,04.00.00,04.01.00,04.02.00,04.03.00,04.04.00,04.04.01,04.04.02,05.00.00</upgradeVersionsList>
             </attributes>
           </eventMessage>
         </component>
@@ -134,7 +139,7 @@
             <assembly>
               <path>bin</path>
               <name>DotNetNuke.Modules.Media.dll</name>
-              <version>04.04.02</version>
+              <version>05.00.00</version>
             </assembly>
             <assembly>
               <name>WillStrohl.API.oEmbed.dll</name>
@@ -190,6 +195,10 @@
             <file>
               <path>Providers\DataProviders\SqlDataProvider</path>
               <name>04.04.02.SqlDataProvider</name>
+            </file>
+            <file>
+              <path>Providers\DataProviders\SqlDataProvider</path>
+              <name>05.00.00.SqlDataProvider</name>
             </file>
             <file>
               <path>Providers\DataProviders\SqlDataProvider</path>
