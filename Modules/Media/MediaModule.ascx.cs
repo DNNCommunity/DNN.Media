@@ -19,6 +19,8 @@
 //
 
 using DotNetNuke.Services.Exceptions;
+using DotNetNuke.Framework;
+using DotNetNuke.Framework.JavaScriptLibraries;
 using System;
 using System.Collections.Generic;
 using DNNSkins = DotNetNuke.UI.Skins;
@@ -58,7 +60,7 @@ namespace DotNetNuke.Modules.Media
 
         private void InitializeComponent()
         {
-            this.Load += new System.EventHandler(Page_Load);
+            this.Load += new EventHandler(Page_Load);
         }
 
         /// <summary>
@@ -74,7 +76,8 @@ namespace DotNetNuke.Modules.Media
         {
             try
             {
-                DotNetNuke.Framework.jQuery.RequestRegistration();
+                JavaScript.RequestRegistration(CommonJs.DnnPlugins);
+                JavaScript.RequestRegistration(CommonJs.jQueryMigrate);
 
                 BindData();
             }
@@ -82,7 +85,6 @@ namespace DotNetNuke.Modules.Media
             {
                 Exceptions.ProcessModuleLoadException(this, exc, UserInfo.IsSuperUser);
             }
-
         }
 
         #endregion
@@ -142,7 +144,5 @@ namespace DotNetNuke.Modules.Media
         }
 
         #endregion
-
     }
-
 }
