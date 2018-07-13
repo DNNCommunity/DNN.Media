@@ -135,13 +135,13 @@
         </component>
         <component type="Assembly">
           <assemblies>
-            <basePath>bin</basePath>
             <assembly>
               <path>bin</path>
               <name>DotNetNuke.Modules.Media.dll</name>
               <version>05.00.00</version>
             </assembly>
             <assembly>
+              <path>bin</path>
               <name>WillStrohl.API.oEmbed.dll</name>
               <version>00.03.00</version>
             </assembly>
