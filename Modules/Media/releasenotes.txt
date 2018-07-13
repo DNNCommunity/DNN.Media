@@ -1,5 +1,5 @@
 ﻿<h3>Media Module Version 05.00.00</h3>
-<p><strong>Date Released:</strong> 02/09/2014</p>
+<p><strong>Date Released:</strong> 07/13/2018</p>
 
 <ul>
 	<li>Issue 11 - Raised minimum supported DNN version to 09.01.01</li>
@@ -10,4 +10,11 @@
 	</li>
 	<li>Issue 12 - Resolved client-side error when Edit Options loads</li>
 	<li>Issue 8 - Replace ISearchable implementation with ModuleSearchBase</li>
+	<li>Issue 10 - Description doesn't display below media as expected</li>
+</ul>
+
+<p>Contributors of this release include:</p>
+
+<ul>
+	<li><a href="https://upendoventures.com/How/People/Will-Strohl" target="_blank">Will Strohl</a> - <a href="https://twitter.com/upendoventures" target="_blank">@UpendoVentures</a></li>
 </ul>

@@ -1,6 +1,6 @@
 //
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -23,7 +23,6 @@ using DotNetNuke.Common.Utilities;
 
 namespace DotNetNuke.Modules.Media
 {
-
 	/// <summary>
 	/// Represents a File Type object.
 	/// </summary>
@@ -96,5 +95,4 @@ namespace DotNetNuke.Modules.Media
 #endregion
 
 	}
-
 }

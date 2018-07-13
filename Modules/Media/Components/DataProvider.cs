@@ -1,6 +1,6 @@
 //
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,7 +18,6 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-//INSTANT C# NOTE: Formerly VB project-level imports:
 using DotNetNuke;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
@@ -45,7 +44,6 @@ namespace DotNetNuke.Modules.Media
 	/// -----------------------------------------------------------------------------
 	public abstract class DataProvider
 	{
-
 #region  Constants 
 
         private const string ASSEMBLY = "DotNetNuke.Modules.Media.SqlDataprovider, DotNetNuke.Modules.Media";
@@ -93,7 +91,5 @@ namespace DotNetNuke.Modules.Media
 		public abstract void DeleteMedia(int ModuleId);
 
 #endregion
-
 	}
-
 }

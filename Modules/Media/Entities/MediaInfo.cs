@@ -1,6 +1,6 @@
 //
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,9 +18,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-//ORIGINAL LINE: Imports DotNetNuke.Modules.Media.MediaInfoMembers
-//INSTANT C# NOTE: The following line has been modified since C# non-aliased 'using' statements only operate on namespaces:
-//INSTANT C# NOTE: Formerly VB project-level imports:
+using DotNetNuke.Entities.Portals;
 using DotNetNuke.Common.Utilities;
 using DotNetNuke.Services.Exceptions;
 using System;
@@ -33,10 +31,9 @@ namespace DotNetNuke.Modules.Media
     /// <summary>
     /// Represents a piece of Media.
     /// </summary>
-    [Serializable()]
+    [Serializable]
     public class MediaInfo : Entities.Modules.IHydratable, IMediaInfo
     {
-
         #region Constants
 
         private const string FILE_PATH_PATTERN = @"^([\w-\s]+/)*([\w-\s]+\.\w{2,})$";
@@ -399,9 +396,8 @@ namespace DotNetNuke.Modules.Media
                 {
                     // IMPORTANT NOTE!!
                     // This code is not thread safe... The portal settings require an active web session
-                    Entities.Portals.PortalSettings settings = Entities.Portals.PortalController.GetCurrentPortalSettings();
-                    //string folderPath = Regex.Match(Src, FILE_PATH_PATTERN).Groups[1].Value;
-                    //string fileName = Regex.Match(Src, FILE_PATH_PATTERN).Groups[2].Value;
+                    PortalSettings settings = PortalController.GetCurrentPortalSettings();
+
                     // Fix suggested from Issue 23595
                     string fileName = Regex.Match(Src, FILE_PATH_PATTERN).Groups[2].Value;
                     string folderPath = Src.Substring(0, Src.Length - fileName.Length); 
@@ -464,7 +460,7 @@ namespace DotNetNuke.Modules.Media
                 {
                     // IMPORTANT NOTE!!
                     // This code is not thread safe... The portal settings require an active web session
-                    Entities.Portals.PortalSettings settings = Entities.Portals.PortalController.GetCurrentPortalSettings();
+                    PortalSettings settings = PortalController.GetCurrentPortalSettings();
                     string folderPath = Regex.Match(Src, FILE_PATH_PATTERN).Groups[1].Value;
                     string fileName = Regex.Match(Src, FILE_PATH_PATTERN).Groups[2].Value;
 
@@ -615,5 +611,4 @@ namespace DotNetNuke.Modules.Media
         #endregion
 
     }
-
 }

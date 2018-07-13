@@ -1,6 +1,6 @@
 ﻿//
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,7 +18,6 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-//INSTANT C# NOTE: Formerly VB project-level imports:
 using DotNetNuke;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
@@ -28,12 +27,10 @@ using System;
 using System.Collections;
 using System.Data;
 using System.Diagnostics;
-
 using System.Text.RegularExpressions;
 
 namespace DotNetNuke.Modules.Media
 {
-
 	public sealed class RegExUtility
 	{
 
@@ -75,7 +72,6 @@ namespace DotNetNuke.Modules.Media
 		/// </history>
 		public static bool IsNumber(object Value, bool PositiveOnly)
 		{
-
 			if (Value == null)
 			{
 				return false;
@@ -89,7 +85,6 @@ namespace DotNetNuke.Modules.Media
 			{
 				return Regex.IsMatch(Value.ToString(), NEGATIVE_ALLOWED_PATTERN);
 			}
-
 		}
 
 		/// <summary>
@@ -105,16 +100,12 @@ namespace DotNetNuke.Modules.Media
 		/// </history>
 		public static bool IsBoolean(object Value)
 		{
-
 			if (Value == null)
 			{
 				return false;
 			}
 
 			return Regex.IsMatch(Value.ToString(), BOOLEAN_PATTERN, RegexOptions.IgnoreCase);
-
 		}
-
 	}
-
 }

@@ -1,6 +1,6 @@
 //
 // DNN Corp - http://www.dnnsoftware.com
-// Copyright (c) 2002-2014
+// Copyright (c) 2002-2018
 // by DNN Corp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -18,10 +18,10 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-//INSTANT C# NOTE: Formerly VB project-level imports:
+using DotNetNuke.Common.Utilities;
+using DotNetNuke.Framework.Providers;
 using System;
 using System.Data;
-
 using Microsoft.ApplicationBlocks.Data;
 
 namespace DotNetNuke.Modules.Media
@@ -45,7 +45,7 @@ namespace DotNetNuke.Modules.Media
 
 		private const string ProviderType = "data";
 
-		private Framework.Providers.ProviderConfiguration p_providerConfiguration = Framework.Providers.ProviderConfiguration.GetProviderConfiguration(ProviderType);
+		private ProviderConfiguration p_providerConfiguration = ProviderConfiguration.GetProviderConfiguration(ProviderType);
 		private string p_connectionString = string.Empty;
 		private string p_providerPath = string.Empty;
 		private string p_objectQualifier = string.Empty;
@@ -68,12 +68,12 @@ namespace DotNetNuke.Modules.Media
 		{
 
 			// Read the configuration specific information for this provider
-			Framework.Providers.Provider objProvider = (Framework.Providers.Provider)(p_providerConfiguration.Providers[p_providerConfiguration.DefaultProvider]);
+			Provider objProvider = (Provider)(p_providerConfiguration.Providers[p_providerConfiguration.DefaultProvider]);
 
 			// Read the attributes for this provider
 			if (! (string.IsNullOrEmpty(objProvider.Attributes[c_ConnectionStringName])))
 			{
-				p_connectionString = DotNetNuke.Common.Utilities.Config.GetConnectionString();
+				p_connectionString = Config.GetConnectionString();
 			}
 			else
 			{
@@ -138,7 +138,7 @@ namespace DotNetNuke.Modules.Media
 
 		private object GetNull(object Field)
 		{
-			return Common.Utilities.Null.GetNull(Field, DBNull.Value);
+			return Null.GetNull(Field, DBNull.Value);
 		}
 
 		public override void AddMedia(int ModuleId, string Src, string Alt, int Width, int Height, string NavigateUrl, int MediaAlignment, bool AutoStart, bool MediaLoop, bool NewWindow, bool TrackClicks, int MediaType, string MediaMessage, int LastUpdatedBy)
@@ -169,5 +169,4 @@ namespace DotNetNuke.Modules.Media
 #endregion
 
 	}
-
 }
