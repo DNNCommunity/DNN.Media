@@ -307,37 +307,34 @@ namespace DotNetNuke.Modules.Media
                     }
 
                     lstMedia[0] = HTMLTag;
-
                 }
                 else if (objMedia.MediaType == 1) // embed code
                 {
-
                     lstMedia[0] = System.Web.HttpUtility.HtmlDecode(objMedia.Src);
-
                 }
                 else if (objMedia.MediaType == 2) // oembed
                 {
-
                     try
                     {
                         Wrapper ctlOEmbed = new Wrapper();
-                        if (objMedia.Width > 0 & objMedia.Height > 0)
-                        {
-                            lstMedia[0] = ctlOEmbed.GetContent(new RequestInfo(objMedia.Src));
-                        }
-                        else
-                        {
+                        //if (objMedia.Width > 0 & objMedia.Height > 0)
+                        //{
+                        //    lstMedia[0] = ctlOEmbed.GetContent(new RequestInfo(objMedia.Src));
+                        //}
+                        //else
+                        //{
                             lstMedia[0] = ctlOEmbed.GetContent(new RequestInfo(objMedia.Src, objMedia.Width, objMedia.Height));
-                        }
+                        //}
                     }
                     catch (Exception ex)
                     {
                         Exceptions.LogException(ex);
                         lstMedia[2] = "oEmbed.ErrorMessage";
                     }
-
                 }
 
+                // load the saved message from options
+                lstMedia[1] = objMedia.MediaMessage;
             }
 
             return lstMedia;

@@ -369,8 +369,8 @@ namespace DotNetNuke.Modules.Media
 
         private void BindControls()
         {
-
-            // Load the Alignment list with localised values
+            // Load the Alignment list with localized values
+            ddlImageAlignment.Items.Clear();
             ddlImageAlignment.Items.Add(new ListItem(p_UseModuleSettings, "0"));
             ddlImageAlignment.Items.Add(new ListItem(p_None, "1"));
             ddlImageAlignment.Items.Add(new ListItem(p_Left, "2"));
@@ -384,7 +384,6 @@ namespace DotNetNuke.Modules.Media
             ctlNavigateUrl.ShowFiles = true;
 
             this.ToggleFileTypeView(-1);
-
         }
 
         private void BindSupportedFileTypes()
