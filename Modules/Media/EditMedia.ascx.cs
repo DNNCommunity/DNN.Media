@@ -27,6 +27,7 @@ using DotNetNuke.Services.Journal;
 using DotNetNuke.Services.Social.Notifications;
 using System;
 using DotNetNuke.Entities.Users;
+using DotNetNuke.Framework.JavaScriptLibraries;
 using DotNetNuke.Services.FileSystem;
 using DotNetNuke.Security;
 using System.Collections.Generic;
@@ -186,7 +187,8 @@ namespace DotNetNuke.Modules.Media
         {
             try
             {
-                DotNetNuke.Framework.jQuery.RequestDnnPluginsRegistration();
+                JavaScript.RequestRegistration(CommonJs.DnnPlugins);
+                JavaScript.RequestRegistration(CommonJs.jQueryMigrate);
 
                 //Get the IsNew state from the ViewState
                 p_isNew = Convert.ToBoolean(ViewState["IsNew"]);
@@ -202,7 +204,7 @@ namespace DotNetNuke.Modules.Media
             }
             catch (Exception exc) //Module failed to load
             {
-                Exceptions.ProcessModuleLoadException(this, exc);
+                Exceptions.ProcessModuleLoadException(this, exc, UserInfo.IsSuperUser);
             }
 
         }
