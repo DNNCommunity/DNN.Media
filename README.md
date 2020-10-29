@@ -5,6 +5,8 @@ This is the DNN Media module. It allows an end user to be given the ability to m
 It also is used to display how a DNN solution could be architected to be built outside of a DNN webwite, as a best practice, 
 which includes several very useful MSBuild scripts.
 
+This module is currently being maintained by Will Strohl @hismightiness, please coordinate with him before merging any pull request or producing a new release.
+
 ---
 
 ## First... Thank You
