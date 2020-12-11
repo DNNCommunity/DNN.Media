@@ -4,7 +4,7 @@ There aren't any built-in tests yet. In general, feel free to follow the guideli
 
 1. Install and/or upgrade the extension
 2. Test all of the available features
-3. [Create an issue for any issues you find](/issues.html)
+3. [Create an issue for any issues you find](/DNN.Media/issues.html)
 
 ## Test Cases
 

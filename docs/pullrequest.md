@@ -6,11 +6,11 @@ Pull requests are required for all people that want to participate in the develo
 
 Please don't just begin writing code. 
 
-First, [create or update an issue](/issues.html). 
+First, [create or update an issue](/DNN.Media/issues.html). 
 
 From there, we will collaborate with each other and other people in the project. 
 
-Once we all agree on the direction for the update(s), feel free to work tirelessly on your update(s).  [Write your code!](/code.html) :)
+Once we all agree on the direction for the update(s), feel free to work tirelessly on your update(s).  [Write your code!](/DNN.Media/code.html) :)
 
 ## Creating a Pull Request
 

@@ -18,14 +18,14 @@ If you need to manage a collection of media items, then you may want to consider
 
 ## How You Can Help
 
-* [Install and use the extension (see below)](/installation.html)
-* [Create Issues (ideas OR bugs)](/issues.html)
-* [Write documentation](/documentation.html)
-* [Test Releases](/testing.html)
+* [Install and use the extension (see below)](/DNN.Media/installation.html)
+* [Create Issues (ideas OR bugs)](/DNN.Media/issues.html)
+* [Write documentation](/DNN.Media/documentation.html)
+* [Test Releases](/DNN.Media/testing.html)
 * Create UI/UX
-* [Write Code](/code.html)
+* [Write Code](/DNN.Media/code.html)
 * Debug Code
-* [Create a Pull Request](/pullrequest.html)
+* [Create a Pull Request](/DNN.Media/pullrequest.html)
 
 ---
 
