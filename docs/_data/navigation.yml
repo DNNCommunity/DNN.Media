@@ -1,2 +1,14 @@
 - title: Home
   url: /index.html
+- title: Installation & Use
+  url: /installation.html
+- title: Creating Issues & Ideas
+  url: /issues.html
+- title: Write Documentation
+  url: /documentation.html
+- title: Testing Releases
+  url: /testing.html
+- title: Writing Code
+  url: /code.html
+- title: Pull Requests
+  url: /pullrequest.html
