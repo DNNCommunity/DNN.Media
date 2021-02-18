@@ -68,7 +68,7 @@ namespace DotNetNuke.Modules.Media
 		private const string TARGET_ATTRIBUTE = "target=\"{0}\" ";
 		//Private Const AUTOSTART_ATTRIBUTE As String = "autostart=""{0}"" "
 		//Private Const AUTOPLAY_ATTRIBUTE As String = "autoplay=""{0}"" "
-        private const string STYLE_ATTRIBUTE = "style=\"width:{0}px;height:{1};\" ";
+        private const string STYLE_ATTRIBUTE = "style=\"width:{0}px;height:{1}px;\" ";
         private const string AUTOPLAY_ATTRIBUTE = "autoplay=\"autoplay\" ";
         private const string LOOP_ATTRIBUTE = "loop=\"loop\" ";
         private const string CONTROLS_ATTRIBUTE = "controls=\"controls\" ";
