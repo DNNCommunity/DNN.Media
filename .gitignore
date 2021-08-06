@@ -369,3 +369,6 @@ ASALocalRun/
 
 # DNN Logs
 [Ww]ebsite/[Pp]ortals/_default/[Ll]ogs/
+
+# DNN Community jekyll theme
+[Dd]ocs/_site
