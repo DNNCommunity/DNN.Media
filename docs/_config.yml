@@ -1,2 +1,6 @@
 remote_theme: DnnCommunity/jekyll-theme-dnn-community
 repository: DnnCommunity/DNN.Media
+markdown: kramdown
+highlighter: rouge
+plugins: 
+ - jekyll-seo-tag
